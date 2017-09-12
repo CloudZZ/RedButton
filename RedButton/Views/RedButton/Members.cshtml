@@ -1,0 +1,11 @@
+﻿@model RedButton.Models.MembersViewModel
+
+@{
+    ViewBag.Title = "title";
+}
+
+<h2>Users</h2>
+@foreach(var user in Model.Members)
+{
+    <p>@user</p>
+}
