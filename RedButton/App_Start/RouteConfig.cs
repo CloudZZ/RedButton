@@ -11,7 +11,7 @@ namespace RedButton
 
             routes.MapRoute("Default", 
                             "{action}/{organization}/{key}", 
-                            new { controller = "RedButton", action = "Index", organization = UrlParameter.Optional, key = UrlParameter.Optional });
+                            new { controller = "RedButton", action = "Panic", organization = UrlParameter.Optional, key = UrlParameter.Optional });
         }
     }
 }

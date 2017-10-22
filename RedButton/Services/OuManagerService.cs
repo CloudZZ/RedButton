@@ -11,7 +11,7 @@ namespace RedButton.Services
 
         public OuManagerService()
         {
-            _path = ConfigurationManager.AppSettings["AD-Path"];
+            _path = ConfigurationManager.AppSettings["ad-Path"];
         }
 
         public bool IsValidKey(string ou, string key)
@@ -36,8 +36,9 @@ namespace RedButton.Services
             return list;
         }
 
-        public void DisableAccounts(string ou)
+        public List<string> DisableAccounts(string ou)
         {
+            var results = new List<string>();
             using (var ouRoot = new DirectoryEntry(GetOuConnectionString(ou)))
             using (var userSearcher = new DirectorySearcher(ouRoot))
             {
@@ -45,6 +46,7 @@ namespace RedButton.Services
                 userSearcher.Filter = "(&(objectCategory=person)(objectClass=user)(!userAccountControl:1.2.840.113556.1.4.803:=2))";
                 // define the properties you want to have returned by the searcher
                 userSearcher.PropertiesToLoad.Add("userAccountControl");
+                userSearcher.PropertiesToLoad.Add("sAMAccountName");
 
                 // search and iterate over results
                 foreach (SearchResult result in userSearcher.FindAll())
@@ -54,9 +56,11 @@ namespace RedButton.Services
                         var val = (int)user.Properties["userAccountControl"][0];
                         user.Properties["userAccountControl"].Value = val | 0x2;
                         user.CommitChanges();
+                        results.Add(result.Properties["sAMAccountName"][0].ToString());
                     }
                 }
             }
+            return results;
         }
 
         public string LdapRoot => $"LDAP://{_path}";
@@ -71,6 +75,14 @@ namespace RedButton.Services
             using (var rootOu = new DirectoryEntry(GetOuConnectionString(ou)))
             {
                 return rootOu.Properties["description"].Value.ToString();
+            }
+        }
+
+        public string GetMail(string ou)
+        {
+            using (var rootOu = new DirectoryEntry(GetOuConnectionString(ou)))
+            {
+                return rootOu.Properties["postalCode"].Value.ToString();
             }
         }
     }
